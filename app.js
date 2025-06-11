@@ -1,3 +1,4 @@
+// Sample data for the operational report dashboard
 const data = {
   vessels: [
     {
@@ -56,142 +57,102 @@ const data = {
   topPorts: ["Singapore", "Rotterdam", "Shanghai"],
 };
 
-function VesselRetentionOverview({ vessels }) {
-  const activeCount = vessels.filter(v => v.status === "active").length;
-  return (
-    <section>
-      <h2>Vessel Retention Overview</h2>
-      <p>Total Active Vessels: {activeCount}</p>
-      <ul>
-        {vessels.map(vessel => (
-          <li key={vessel.name}>
-            <strong>{vessel.name}</strong> - {vessel.type} - {vessel.status} ({vessel.remarks})<br />
-            Registered Owner: {vessel.registeredOwner}, Manager: {vessel.manager}, P&I Club: {vessel.pAndIClub}
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
+function addSection(container, title, innerHTML) {
+  const section = document.createElement('section');
+  const heading = document.createElement('h2');
+  heading.textContent = title;
+  section.appendChild(heading);
+  section.insertAdjacentHTML('beforeend', innerHTML);
+  container.appendChild(section);
 }
 
-function CrewStats({ stats }) {
-  return (
-    <section>
-      <h2>Crew Onboard Statistics</h2>
-      <ul>
-        <li>Officers: {stats.officers}</li>
-        <li>Ratings: {stats.ratings}</li>
-        <li>Cadets: {stats.cadets}</li>
-      </ul>
-    </section>
-  );
+function vesselRetentionHTML(vessels) {
+  const activeCount = vessels.filter(v => v.status === 'active').length;
+  let html = `<p>Total Active Vessels: ${activeCount}</p><ul>`;
+  vessels.forEach(v => {
+    html += `<li><strong>${v.name}</strong> - ${v.type} - ${v.status} (${v.remarks})<br>` +
+            `Registered Owner: ${v.registeredOwner}, Manager: ${v.manager}, P&I Club: ${v.pAndIClub}</li>`;
+  });
+  html += '</ul>';
+  return html;
 }
 
-function FleetPoolingOverview({ pool }) {
-  return (
-    <section>
-      <h2>Fleet Pooling Overview</h2>
-      <p>Total Crew in Pool: {pool.totalCrew}</p>
-    </section>
-  );
+function crewStatsHTML(stats) {
+  return `<ul><li>Officers: ${stats.officers}</li>` +
+         `<li>Ratings: ${stats.ratings}</li>` +
+         `<li>Cadets: ${stats.cadets}</li></ul>`;
 }
 
-function PrematureRepatriation({ data }) {
+function fleetPoolHTML(pool) {
+  return `<p>Total Crew in Pool: ${pool.totalCrew}</p>`;
+}
+
+function repatriationHTML(data) {
   const { totalCases, causes } = data;
-  return (
-    <section>
-      <h2>Premature Repatriation Rate</h2>
-      <p>Total Cases: {totalCases}</p>
-      <ul>
-        <li>Compassionate Grounds: {causes.compassionate}</li>
-        <li>Medical Grounds: {causes.medical}</li>
-        <li>Voluntary Repatriation: {causes.voluntary}</li>
-        <li>Disciplinary Repatriation: {causes.disciplinary}</li>
-        <li>Others: {causes.others}</li>
-      </ul>
-    </section>
-  );
+  return `<p>Total Cases: ${totalCases}</p>` +
+         `<ul>` +
+         `<li>Compassionate Grounds: ${causes.compassionate}</li>` +
+         `<li>Medical Grounds: ${causes.medical}</li>` +
+         `<li>Voluntary Repatriation: ${causes.voluntary}</li>` +
+         `<li>Disciplinary Repatriation: ${causes.disciplinary}</li>` +
+         `<li>Others: ${causes.others}</li>` +
+         `</ul>`;
 }
 
-function CrewChangeSummary({ crewChanges }) {
-  return (
-    <section>
-      <h2>Crew Change Summary</h2>
-      <ul>
-        {crewChanges.map((change, idx) => (
-          <li key={idx}>{change.date} - {change.vessel}: {change.details}</li>
-        ))}
-      </ul>
-    </section>
-  );
+function crewChangeHTML(changes) {
+  let html = '<ul>';
+  changes.forEach(c => {
+    html += `<li>${c.date} - ${c.vessel}: ${c.details}</li>`;
+  });
+  html += '</ul>';
+  return html;
 }
 
-function HireStatusReport({ hireStatus }) {
-  return (
-    <section>
-      <h2>Hire Status Report</h2>
-      <ul>
-        {hireStatus.map((h, idx) => (
-          <li key={idx}>{h.vessel} - New: {h.newHire}, Returning: {h.returning}</li>
-        ))}
-      </ul>
-    </section>
-  );
+function hireStatusHTML(status) {
+  let html = '<ul>';
+  status.forEach(h => {
+    html += `<li>${h.vessel} - New: ${h.newHire}, Returning: ${h.returning}</li>`;
+  });
+  html += '</ul>';
+  return html;
 }
 
-function AgeReport({ ageReport }) {
-  return (
-    <section>
-      <h2>Average Age Report</h2>
-      <ul>
-        {ageReport.map((age, idx) => (
-          <li key={idx}>{age.vessel} - Avg: {age.avgAge}, Max: {age.maxAge}, Min: {age.minAge}</li>
-        ))}
-      </ul>
-    </section>
-  );
+function ageReportHTML(report) {
+  let html = '<ul>';
+  report.forEach(a => {
+    html += `<li>${a.vessel} - Avg: ${a.avgAge}, Max: ${a.maxAge}, Min: ${a.minAge}</li>`;
+  });
+  html += '</ul>';
+  return html;
 }
 
-function PromotionReport({ promotions }) {
-  return (
-    <section>
-      <h2>Promotion Report</h2>
-      <ul>
-        {promotions.map((p, idx) => (
-          <li key={idx}>{p.vessel} - {p.rank}: {p.count}</li>
-        ))}
-      </ul>
-    </section>
-  );
+function promotionHTML(promotions) {
+  let html = '<ul>';
+  promotions.forEach(p => {
+    html += `<li>${p.vessel} - ${p.rank}: ${p.count}</li>`;
+  });
+  html += '</ul>';
+  return html;
 }
 
-function TopPorts({ ports }) {
-  return (
-    <section>
-      <h2>Top Ports Used for Crew Changes</h2>
-      <ul>
-        {ports.map((port, idx) => (
-          <li key={idx}>{port}</li>
-        ))}
-      </ul>
-    </section>
-  );
+function topPortsHTML(ports) {
+  let html = '<ul>';
+  ports.forEach(port => {
+    html += `<li>${port}</li>`;
+  });
+  html += '</ul>';
+  return html;
 }
 
-function App() {
-  return (
-    <div>
-      <VesselRetentionOverview vessels={data.vessels} />
-      <CrewStats stats={data.crewStats} />
-      <FleetPoolingOverview pool={data.crewPool} />
-      <PrematureRepatriation data={data.prematureRepatriation} />
-      <CrewChangeSummary crewChanges={data.crewChanges} />
-      <HireStatusReport hireStatus={data.hireStatus} />
-      <AgeReport ageReport={data.ageReport} />
-      <PromotionReport promotions={data.promotions} />
-      <TopPorts ports={data.topPorts} />
-    </div>
-  );
-}
-
-ReactDOM.render(<App />, document.getElementById('root'));
+document.addEventListener('DOMContentLoaded', () => {
+  const root = document.getElementById('root');
+  addSection(root, 'Vessel Retention Overview', vesselRetentionHTML(data.vessels));
+  addSection(root, 'Crew Onboard Statistics', crewStatsHTML(data.crewStats));
+  addSection(root, 'Fleet Pooling Overview', fleetPoolHTML(data.crewPool));
+  addSection(root, 'Premature Repatriation Rate', repatriationHTML(data.prematureRepatriation));
+  addSection(root, 'Crew Change Summary', crewChangeHTML(data.crewChanges));
+  addSection(root, 'Hire Status Report', hireStatusHTML(data.hireStatus));
+  addSection(root, 'Average Age Report', ageReportHTML(data.ageReport));
+  addSection(root, 'Promotion Report', promotionHTML(data.promotions));
+  addSection(root, 'Top Ports Used for Crew Changes', topPortsHTML(data.topPorts));
+});
