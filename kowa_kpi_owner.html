@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KOWA KPI Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-5xl mx-auto bg-white shadow-md rounded p-6">
+    <h1 class="text-2xl font-bold mb-4">KOWA KPI Dashboard</h1>
+    <div class="mb-6">
+      <label class="block mb-2 font-semibold" for="fileInput">Upload kowa_kpi_manning.json</label>
+      <input id="fileInput" type="file" accept="application/json" class="border p-2 rounded w-full" />
+    </div>
+    <div id="dashboard" class="space-y-8"></div>
+  </div>
+
+  <script>
+    const dashboard = document.getElementById('dashboard');
+
+    document.getElementById('fileInput').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          renderDashboard(data);
+        } catch (e) {
+          alert('Invalid JSON file');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    function renderDashboard(data) {
+      dashboard.innerHTML = '';
+
+      renderVesselRetention(data.vessels || []);
+      renderCrewStats(data.crewStats || {});
+      renderFleetPool(data.crewPool || {});
+      renderRepatriation(data.prematureRepatriation || {});
+      renderCrewChanges(data.crewChanges || []);
+      renderHireStatus(data.hireStatus || []);
+      renderAgeReport(data.ageReport || []);
+      renderPromotions(data.promotions || []);
+      renderTopPorts(data.topPorts || []);
+    }
+
+    function section(title) {
+      const sec = document.createElement('section');
+      sec.className = 'border p-4 rounded shadow';
+      const h2 = document.createElement('h2');
+      h2.className = 'text-xl font-semibold mb-2';
+      h2.textContent = title;
+      sec.appendChild(h2);
+      dashboard.appendChild(sec);
+      return sec;
+    }
+
+    function renderVesselRetention(vessels) {
+      const activeCount = vessels.filter(v => v.status === 'active').length;
+      const sec = section('Vessel Retention Overview');
+      const p = document.createElement('p');
+      p.textContent = `Total Active Vessels: ${activeCount}`;
+      sec.appendChild(p);
+      const table = document.createElement('table');
+      table.className = 'table-auto w-full mt-2';
+      table.innerHTML = `<thead><tr class='bg-gray-200'>
+        <th class='px-2 py-1'>Name</th>
+        <th class='px-2 py-1'>Type</th>
+        <th class='px-2 py-1'>Status</th>
+        <th class='px-2 py-1'>Remarks</th>
+        <th class='px-2 py-1'>Owner</th>
+        <th class='px-2 py-1'>Manager</th>
+        <th class='px-2 py-1'>P&I Club</th>
+      </tr></thead><tbody></tbody>`;
+      vessels.forEach(v => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class='border px-2 py-1'>${v.name}</td>
+          <td class='border px-2 py-1'>${v.type}</td>
+          <td class='border px-2 py-1'>${v.status}</td>
+          <td class='border px-2 py-1'>${v.remarks}</td>
+          <td class='border px-2 py-1'>${v.registeredOwner}</td>
+          <td class='border px-2 py-1'>${v.manager}</td>
+          <td class='border px-2 py-1'>${v.pAndIClub}</td>`;
+        table.querySelector('tbody').appendChild(row);
+      });
+      sec.appendChild(table);
+    }
+
+    function renderCrewStats(stats) {
+      const sec = section('Crew Onboard Statistics');
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc pl-5';
+      ul.innerHTML = `<li>Officers: ${stats.officers || 0}</li>
+        <li>Ratings: ${stats.ratings || 0}</li>
+        <li>Cadets: ${stats.cadets || 0}</li>`;
+      sec.appendChild(ul);
+    }
+
+    function renderFleetPool(pool) {
+      const sec = section('Fleet Pooling Overview');
+      sec.innerHTML += `<p>Total Crew in Pool: ${pool.totalCrew || 0}</p>`;
+    }
+
+    function renderRepatriation(data) {
+      const sec = section('Premature Repatriation Rate');
+      const { totalCases = 0, causes = {} } = data;
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc pl-5';
+      ul.innerHTML = `<li>Total Cases: ${totalCases}</li>
+        <li>Compassionate Grounds: ${causes.compassionate || 0}</li>
+        <li>Medical Grounds: ${causes.medical || 0}</li>
+        <li>Voluntary Repatriation: ${causes.voluntary || 0}</li>
+        <li>Disciplinary Repatriation: ${causes.disciplinary || 0}</li>
+        <li>Others: ${causes.others || 0}</li>`;
+      sec.appendChild(ul);
+    }
+
+    function renderCrewChanges(changes) {
+      const sec = section('Crew Change Summary');
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc pl-5';
+      changes.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = `${c.date} - ${c.vessel}: ${c.details}`;
+        ul.appendChild(li);
+      });
+      sec.appendChild(ul);
+    }
+
+    function renderHireStatus(hire) {
+      const sec = section('Hire Status Report');
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc pl-5';
+      hire.forEach(h => {
+        const li = document.createElement('li');
+        li.textContent = `${h.vessel} - New: ${h.newHire}, Returning: ${h.returning}`;
+        ul.appendChild(li);
+      });
+      sec.appendChild(ul);
+    }
+
+    function renderAgeReport(report) {
+      const sec = section('Average Age Report');
+      const table = document.createElement('table');
+      table.className = 'table-auto w-full';
+      table.innerHTML = `<thead><tr class='bg-gray-200'>
+        <th class='px-2 py-1'>Vessel</th>
+        <th class='px-2 py-1'>Average</th>
+        <th class='px-2 py-1'>Max</th>
+        <th class='px-2 py-1'>Min</th>
+      </tr></thead><tbody></tbody>`;
+      report.forEach(a => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class='border px-2 py-1'>${a.vessel}</td>
+          <td class='border px-2 py-1'>${a.avgAge}</td>
+          <td class='border px-2 py-1'>${a.maxAge}</td>
+          <td class='border px-2 py-1'>${a.minAge}</td>`;
+        table.querySelector('tbody').appendChild(row);
+      });
+      sec.appendChild(table);
+    }
+
+    function renderPromotions(promos) {
+      const sec = section('Promotion Report');
+      const ul = document.createElement('ul');
+      ul.className = 'list-disc pl-5';
+      promos.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = `${p.vessel} - ${p.rank}: ${p.count}`;
+        ul.appendChild(li);
+      });
+      sec.appendChild(ul);
+    }
+
+    function renderTopPorts(ports) {
+      const sec = section('Top Ports Used for Crew Changes');
+      const canvas = document.createElement('canvas');
+      sec.appendChild(canvas);
+      new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: ports,
+          datasets: [{
+            label: 'Ports',
+            data: ports.map(() => 1),
+            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+          }]
+        },
+        options: {
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
